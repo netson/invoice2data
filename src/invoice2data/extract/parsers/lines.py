@@ -97,6 +97,21 @@ def parse_block(  # noqa: RUF100 C901
         # If the line has empty lines in it , skip them
         if not line.strip("").strip("\n").strip("\r") or not line:
             continue
+        # Next we see if this is a line that should be skipped
+        if "skip_line" in settings:
+            # If skip_line was provided, check for a match now
+            if isinstance(settings["skip_line"], list):
+                # Accepts a list
+                skip_line_results = [
+                    re.search(x, line) for x in settings["skip_line"]
+                ]
+            else:
+                # Or a simple string
+                skip_line_results = [re.search(settings["skip_line"], line)]
+            if any(skip_line_results):
+                # There was at least one match to a skip_line
+                logger.debug("skip_line match on \ns*%s*", line)
+                continue
         if "first_line" in settings:
             # Check if the current lines the first_line pattern
             match = parse_line(settings["first_line"], line)
@@ -129,21 +144,6 @@ def parse_block(  # noqa: RUF100 C901
                     current_row = {}
                     # Flip first_line_found boolean to look for first_line again on next loop
                     first_line_found = False
-                    continue
-            # Next we see if this is a line that should be skipped
-            if "skip_line" in settings:
-                # If skip_line was provided, check for a match now
-                if isinstance(settings["skip_line"], list):
-                    # Accepts a list
-                    skip_line_results = [
-                        re.search(x, line) for x in settings["skip_line"]
-                    ]
-                else:
-                    # Or a simple string
-                    skip_line_results = [re.search(settings["skip_line"], line)]
-                if any(skip_line_results):
-                    # There was at least one match to a skip_line
-                    logger.debug("skip_line match on \ns*%s*", line)
                     continue
             # If none of those have continued the loop, check if this is just a normal line
             match = parse_line(settings["line"], line)
