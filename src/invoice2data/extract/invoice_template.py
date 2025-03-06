@@ -263,7 +263,9 @@ class InvoiceTemplate(OrderedDictType[str, Any]):
 
             else:
                 _handle_legacy_syntax(self, k, v, optimized_str, output)
+
         output["currency"] = self.options["currency"]
+        output["template_name"] = self["template_name"]
 
         # Run plugins:
         for plugin_keyword, plugin_func in PLUGIN_MAPPING.items():
